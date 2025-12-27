@@ -8,6 +8,13 @@ export interface DashboardData {
   totalConsultants: number;
   unreadNotifications: number;
   recentActivities: any[];
+  recentProjects: any[];
+  recentTickets: any[];
+  upcomingMeetings: any[];
+  quickStats: {
+    activeProjectsCount: number;
+    upcomingMeetingsCount: number;
+  };
   projectStats: Record<string, number>;
   ticketStats: Record<string, number>;
 }
@@ -85,6 +92,28 @@ export const notificationsReportsApiService = {
         .order('created_at', { ascending: false })
         .limit(5);
 
+      // جلب المشاريع الحديثة
+      const { data: recentProjects } = await supabase
+        .from('projects_2025_12_17_09_00')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // جلب التذاكر الحديثة
+      const { data: recentTickets } = await supabase
+        .from('tickets_2025_12_17_09_00')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      // جلب الاجتماعات القادمة
+      const { data: upcomingMeetings } = await supabase
+        .from('meetings_2025_12_17_09_00')
+        .select('*')
+        .gte('start_time', new Date().toISOString())
+        .order('start_time', { ascending: true })
+        .limit(5);
+
       // جلب إحصائيات المشاريع
       const { data: projectStats } = await supabase
         .from('projects_2025_12_17_09_00')
@@ -113,6 +142,13 @@ export const notificationsReportsApiService = {
         totalConsultants: totalConsultants || 0,
         unreadNotifications: unreadNotifications || 0,
         recentActivities: recentNotifications || [],
+        recentProjects: recentProjects || [],
+        recentTickets: recentTickets || [],
+        upcomingMeetings: upcomingMeetings || [],
+        quickStats: {
+          activeProjectsCount: statusCounts['ACTIVE'] || statusCounts['active'] || 0,
+          upcomingMeetingsCount: upcomingMeetings?.length || 0,
+        },
         projectStats: statusCounts,
         ticketStats: ticketPriorityCounts
       };
@@ -133,6 +169,13 @@ export const notificationsReportsApiService = {
           totalConsultants: 0,
           unreadNotifications: 0,
           recentActivities: [],
+          recentProjects: [],
+          recentTickets: [],
+          upcomingMeetings: [],
+          quickStats: {
+            activeProjectsCount: 0,
+            upcomingMeetingsCount: 0,
+          },
           projectStats: {},
           ticketStats: {}
         }

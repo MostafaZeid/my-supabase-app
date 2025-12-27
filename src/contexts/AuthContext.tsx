@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { User } from '@supabase/supabase-js';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from './LanguageContext';
 
 export type UserRole = 'system_admin' | 'project_manager' | 'project_consultant' | 'main_client' | 'sub_client';
@@ -71,21 +72,13 @@ const rolePermissions: Record<UserRole, string[]> = {
     'meetings.create', 'meetings.edit', 'meetings.view', 'meetings.minutes',
     'communication.send', 'communication.view', 'communication.moderate'
   ],
-  lead_consultant: [
+  project_consultant: [
     'projects.view', 'projects.edit',
     'deliverables.create', 'deliverables.edit', 'deliverables.view', 'deliverables.upload',
     'consultants.view', 'consultants.edit',
     'clients.view',
     'reports.view', 'reports.project_status',
     'meetings.view', 'meetings.minutes',
-    'communication.send', 'communication.view'
-  ],
-  sub_consultant: [
-    'projects.view',
-    'deliverables.view', 'deliverables.upload',
-    'consultants.view',
-    'reports.view',
-    'meetings.view',
     'communication.send', 'communication.view'
   ],
   main_client: [
@@ -193,87 +186,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
 
-    return () => clearTimeout(timer);
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setUserProfile(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        // Create default profile if none exists
+        const defaultProfile: UserProfile = {
+          id: userId,
+          user_id: userId,
+          full_name: 'User',
+          role: 'sub_client',
+          organization: '',
+          is_active: true,
+          permissions: roleAdvancedPermissions['sub_client']
+        };
+        setUserProfile(defaultProfile);
+      } else if (data) {
+        // Merge permissions from role mapping
+        const profileWithPermissions = {
+          ...data,
+          permissions: roleAdvancedPermissions[data.role as UserRole] || []
+        };
+        setUserProfile(profileWithPermissions);
+      }
+    } catch (error) {
+      console.error('Exception fetching user profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
       
-      // Simulate sign in
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
       
-      // Determine role based on email for demo purposes
-      let role: UserRole = 'system_admin';
-      let organization = 'شركة البيان للاستشارات';
-      
-      if (email === 'admin@system.com') {
-        role = 'system_admin';
-        organization = 'شركة البيان للاستشارات';
-      } else if (email === 'manager@project.com') {
-        role = 'project_manager';
-        organization = 'شركة البيان للاستشارات';
-      } else if (email === 'consultant@project.com') {
-        role = 'project_consultant';
-        organization = 'شركة البيان للاستشارات';
-      } else if (email === 'main@client.com') {
-        role = 'main_client';
-        organization = 'شركة التقنية المتقدمة';
-      } else if (email === 'sub@client.com') {
-        role = 'sub_client';
-        organization = 'شركة التقنية المتقدمة';
+      if (error) {
+        return { data: null, error };
       }
 
-      const mockUser = {
-        id: 'mock-user-id',
-        email,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        app_metadata: {},
-        user_metadata: {},
-        aud: 'authenticated',
-        confirmation_sent_at: null,
-        recovery_sent_at: null,
-        email_change_sent_at: null,
-        new_email: null,
-        invited_at: null,
-        action_link: null,
-        email_confirmed_at: new Date().toISOString(),
-        phone_confirmed_at: null,
-        confirmed_at: new Date().toISOString(),
-        last_sign_in_at: new Date().toISOString(),
-        role: 'authenticated',
-        phone: null,
-        email_change: null,
-        email_change_confirm_status: 0,
-        banned_until: null,
-        identities: []
-      } as User;
-
-      const mockProfile = {
-        id: 'mock-profile-id',
-        user_id: 'mock-user-id',
-        full_name: role === 'system_admin' ? 'د. فهد السعدي - مدير النظام' :
-                   role === 'project_manager' ? 'م. عبدالله القحطاني - مدير المشروع' :
-                   role === 'project_consultant' ? 'محمد رشاد - مستشار المشروع' :
-                   role === 'main_client' ? 'سلطان منصور - عميل رئيسي' : 'عبدالعزيز العتيبي - عميل فرعي',
-        role,
-        organization,
-        phone: '+966500000000',
-        avatar_url: null,
-        is_active: true,
-        permissions: roleAdvancedPermissions[role]
-      };
-
-      setUser(mockUser);
-      setUserProfile(mockProfile);
+      if (data.user) {
+        await fetchUserProfile(data.user.id);
+      }
       
-      return { data: { user: mockUser }, error: null };
+      return { data, error: null };
     } catch (error: any) {
       return { data: null, error };
     } finally {
@@ -285,54 +277,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true);
       
-      // Simulate sign up
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser = {
-        id: 'mock-user-id',
+      // Sign up the user with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
         email,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        app_metadata: {},
-        user_metadata: userData,
-        aud: 'authenticated',
-        confirmation_sent_at: null,
-        recovery_sent_at: null,
-        email_change_sent_at: null,
-        new_email: null,
-        invited_at: null,
-        action_link: null,
-        email_confirmed_at: new Date().toISOString(),
-        phone_confirmed_at: null,
-        confirmed_at: new Date().toISOString(),
-        last_sign_in_at: new Date().toISOString(),
-        role: 'authenticated',
-        phone: null,
-        email_change: null,
-        email_change_confirm_status: 0,
-        banned_until: null,
-        identities: []
-      } as User;
-
-      // تحويل الأدوار القديمة للجديدة
-      const normalizedRole = userData.role === 'lead_consultant' ? 'system_admin' : userData.role;
+        password,
+        options: {
+          data: {
+            full_name: userData.full_name,
+            role: userData.role,
+            organization: userData.organization,
+          },
+        },
+      });
       
-      const mockProfile = {
-        id: 'mock-profile-id',
-        user_id: 'mock-user-id',
-        full_name: userData.full_name,
-        role: normalizedRole,
-        organization: userData.organization,
-        phone: null,
-        avatar_url: null,
-        is_active: true,
-        permissions: rolePermissions[normalizedRole] || []
-      };
+      if (error) {
+        return { data: null, error };
+      }
 
-      setUser(mockUser);
-      setUserProfile(mockProfile);
+      // Create user profile if signup was successful
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .insert({
+            user_id: data.user.id,
+            full_name: userData.full_name,
+            role: userData.role,
+            organization: userData.organization,
+            is_active: true,
+          });
+
+        if (profileError) {
+          console.error('Error creating user profile:', profileError);
+        }
+      }
       
-      return { data: { user: mockUser }, error: null };
+      return { data, error: null };
     } catch (error: any) {
       return { data: null, error };
     } finally {
@@ -341,6 +320,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signOut = async () => {
+    await supabase.auth.signOut();
     setUser(null);
     setUserProfile(null);
   };

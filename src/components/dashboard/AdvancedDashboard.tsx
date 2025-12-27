@@ -85,30 +85,34 @@ const AdvancedDashboard: React.FC = () => {
       if (dashboardResponse.success) {
         setDashboardData(dashboardResponse.data);
         
-        // Update project stats from real data
-        const quickStats = dashboardResponse.data.quickStats;
+        // Update project stats from real data with defensive checks
+        const quickStats = dashboardResponse.data?.quickStats || { activeProjectsCount: 0, upcomingMeetingsCount: 0 };
+        const recentProjects = dashboardResponse.data?.recentProjects || [];
+        const recentTickets = dashboardResponse.data?.recentTickets || [];
+        const upcomingMeetings = dashboardResponse.data?.upcomingMeetings || [];
+        
         setProjectStats({
-          total: dashboardResponse.data.recentProjects.length,
-          active: quickStats.activeProjectsCount,
-          completed: dashboardResponse.data.recentProjects.filter((p: any) => p.status === 'COMPLETED').length,
-          delayed: dashboardResponse.data.recentProjects.filter((p: any) => 
+          total: recentProjects.length,
+          active: quickStats.activeProjectsCount || 0,
+          completed: recentProjects.filter((p: any) => p.status === 'COMPLETED').length,
+          delayed: recentProjects.filter((p: any) => 
             p.end_date && new Date(p.end_date) < new Date() && p.status !== 'COMPLETED'
           ).length
         });
         
         // Update deliverable stats
         setDeliverableStats({
-          total: dashboardResponse.data.recentTickets.length,
-          pending: dashboardResponse.data.recentTickets.filter((t: any) => t.status === 'OPEN').length,
-          approved: dashboardResponse.data.recentTickets.filter((t: any) => t.status === 'RESOLVED').length,
-          rejected: dashboardResponse.data.recentTickets.filter((t: any) => t.status === 'CLOSED').length
+          total: recentTickets.length,
+          pending: recentTickets.filter((t: any) => t.status === 'OPEN').length,
+          approved: recentTickets.filter((t: any) => t.status === 'RESOLVED').length,
+          rejected: recentTickets.filter((t: any) => t.status === 'CLOSED').length
         });
         
         // Update meeting stats
         setMeetingStats({
-          thisWeek: dashboardResponse.data.upcomingMeetings.length,
-          thisMonth: dashboardResponse.data.upcomingMeetings.length,
-          upcoming: quickStats.upcomingMeetingsCount
+          thisWeek: upcomingMeetings.length,
+          thisMonth: upcomingMeetings.length,
+          upcoming: quickStats.upcomingMeetingsCount || 0
         });
       }
       
