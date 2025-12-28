@@ -1275,7 +1275,7 @@ export function ClientsPage() {
 
                   {/* Tags */}
                   <div className="flex flex-wrap gap-1">
-                    {(dir === 'rtl' ? client.tags : client.tagsEn).slice(0, 3).map((tag, index) => (
+                    {((dir === 'rtl' ? client.tags : client.tagsEn) || []).slice(0, 3).map((tag, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {tag}
                       </Badge>

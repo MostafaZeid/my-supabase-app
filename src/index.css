@@ -6,6 +6,15 @@
 All colors MUST be HSL.
 */
 
+/* Tajawal Font for Arabic Typography */
+:root {
+  --font-tajawal: 'Tajawal', 'Arial', 'Helvetica', sans-serif;
+}
+
+html, body {
+  font-family: var(--font-tajawal);
+}
+
 @layer base {
   :root {
     /* Modern Background Colors */

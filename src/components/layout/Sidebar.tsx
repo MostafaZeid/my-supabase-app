@@ -224,7 +224,7 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
         variant="outline"
         size="sm"
         onClick={() => setIsMobileOpen(true)}
-        className="fixed top-20 left-4 z-45 lg:hidden"
+        className={`fixed top-20 ${dir === 'rtl' ? 'right-4' : 'left-4'} z-45 lg:hidden`}
       >
         <Menu className="w-4 h-4" />
       </Button>
@@ -245,8 +245,10 @@ export function Sidebar({ currentPage, onPageChange }: SidebarProps) {
       </div>
 
       {/* Mobile Sidebar */}
-      <div className={`fixed inset-y-0 left-0 z-45 w-64 transform transition-transform duration-300 lg:hidden ${
-        isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+      <div className={`fixed inset-y-0 ${dir === 'rtl' ? 'right-0' : 'left-0'} z-45 w-64 transform transition-transform duration-300 lg:hidden ${
+        isMobileOpen 
+          ? 'translate-x-0' 
+          : dir === 'rtl' ? 'translate-x-full' : '-translate-x-full'
       }`}>
         <div className="pt-16">
           <SidebarContent />
