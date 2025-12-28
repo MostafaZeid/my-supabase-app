@@ -100,6 +100,9 @@ interface Client {
 
 // مكون تفاصيل إجمالي العملاء
 const TotalClientsModal = ({ isOpen, onClose, clients, dir }: any) => {
+  // Ensure clients is always an array
+  const safeClients = clients || [];
+  
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'active': return <CheckCircle2 className="w-4 h-4 text-green-600" />;
@@ -119,9 +122,9 @@ const TotalClientsModal = ({ isOpen, onClose, clients, dir }: any) => {
   };
 
   const statusCounts = {
-    active: clients.filter((c: Client) => c.status === 'active').length,
-    prospect: clients.filter((c: Client) => c.status === 'prospect').length,
-    inactive: clients.filter((c: Client) => c.status === 'inactive').length
+    active: safeClients.filter((c: Client) => c.status === 'active').length,
+    prospect: safeClients.filter((c: Client) => c.status === 'prospect').length,
+    inactive: safeClients.filter((c: Client) => c.status === 'inactive').length
   };
 
   return (
@@ -169,12 +172,12 @@ const TotalClientsModal = ({ isOpen, onClose, clients, dir }: any) => {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {clients.map((client: Client) => (
+                {safeClients.map((client: Client) => (
                   <div key={client.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
                         <AvatarFallback className="bg-blue-100 text-blue-600">
-                          {(dir === 'rtl' ? client.organization : client.organizationEn).charAt(0)}
+                          {((dir === 'rtl' ? client.organization : client.organizationEn) || '').charAt(0) || 'C'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
@@ -209,7 +212,9 @@ const TotalClientsModal = ({ isOpen, onClose, clients, dir }: any) => {
 
 // مكون تفاصيل العملاء النشطين
 const ActiveClientsModal = ({ isOpen, onClose, clients, dir }: any) => {
-  const activeClients = clients.filter((c: Client) => c.status === 'active');
+  // Ensure clients is always an array
+  const safeClients = clients || [];
+  const activeClients = safeClients.filter((c: Client) => c.status === 'active');
   
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat(dir === 'rtl' ? 'ar-SA' : 'en-US', {
@@ -219,8 +224,8 @@ const ActiveClientsModal = ({ isOpen, onClose, clients, dir }: any) => {
     }).format(amount);
   };
 
-  const totalRevenue = activeClients.reduce((sum: number, client: Client) => sum + client.revenue, 0);
-  const totalProjects = activeClients.reduce((sum: number, client: Client) => sum + client.projects.total, 0);
+  const totalRevenue = activeClients.reduce((sum: number, client: Client) => sum + (client.revenue || 0), 0);
+  const totalProjects = activeClients.reduce((sum: number, client: Client) => sum + (client.projects?.total || 0), 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -273,7 +278,7 @@ const ActiveClientsModal = ({ isOpen, onClose, clients, dir }: any) => {
                       <div className="flex items-center gap-3">
                         <Avatar className="w-12 h-12">
                           <AvatarFallback className="bg-green-100 text-green-600">
-                            {(dir === 'rtl' ? client.organization : client.organizationEn).charAt(0)}
+                            {((dir === 'rtl' ? client.organization : client.organizationEn) || '').charAt(0) || 'C'}
                           </AvatarFallback>
                         </Avatar>
                         <div>
@@ -327,13 +332,15 @@ const ActiveClientsModal = ({ isOpen, onClose, clients, dir }: any) => {
 
 // مكون تفاصيل إجمالي المشاريع
 const TotalProjectsModal = ({ isOpen, onClose, clients, dir }: any) => {
-  const allProjects = clients.flatMap((client: Client) => 
-    Array.from({ length: client.projects.total }, (_, i) => ({
+  // Ensure clients is always an array
+  const safeClients = clients || [];
+  const allProjects = safeClients.flatMap((client: Client) => 
+    Array.from({ length: client.projects?.total || 0 }, (_, i) => ({
       id: `${client.id}-P${i + 1}`,
       clientName: dir === 'rtl' ? client.organization : client.organizationEn,
-      name: dir === 'rtl' ? `مشروع ${i + 1} - ${client.organization}` : `Project ${i + 1} - ${client.organizationEn}`,
-      status: i < client.projects.active ? 'active' : i < client.projects.active + client.projects.completed ? 'completed' : 'on_hold',
-      progress: i < client.projects.active ? Math.floor(Math.random() * 40) + 30 : i < client.projects.active + client.projects.completed ? 100 : Math.floor(Math.random() * 30),
+      name: dir === 'rtl' ? `مشروع ${i + 1} - ${client.organization || ''}` : `Project ${i + 1} - ${client.organizationEn || ''}`,
+      status: i < (client.projects?.active || 0) ? 'active' : i < (client.projects?.active || 0) + (client.projects?.completed || 0) ? 'completed' : 'on_hold',
+      progress: i < (client.projects?.active || 0) ? Math.floor(Math.random() * 40) + 30 : i < (client.projects?.active || 0) + (client.projects?.completed || 0) ? 100 : Math.floor(Math.random() * 30),
       budget: Math.floor(Math.random() * 500000) + 100000,
       clientId: client.id
     }))
@@ -556,13 +563,13 @@ const AvgSatisfactionModal = ({ isOpen, onClose, clients, dir }: any) => {
             <CardContent>
               <div className="space-y-3">
                 {clientsWithSatisfaction
-                  .sort((a, b) => b.satisfaction - a.satisfaction)
+                  .sort((a, b) => (b.satisfaction || 0) - (a.satisfaction || 0))
                   .map((client: Client) => (
                   <div key={client.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
                         <AvatarFallback className="bg-orange-100 text-orange-600">
-                          {(dir === 'rtl' ? client.organization : client.organizationEn).charAt(0)}
+                          {((dir === 'rtl' ? client.organization : client.organizationEn) || '').charAt(0) || 'C'}
                         </AvatarFallback>
                       </Avatar>
                       <div>
@@ -577,10 +584,10 @@ const AvgSatisfactionModal = ({ isOpen, onClose, clients, dir }: any) => {
                     <div className="flex items-center gap-2">
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 text-orange-500" />
-                        <span className="text-lg font-bold text-orange-600">{client.satisfaction}%</span>
+                        <span className="text-lg font-bold text-orange-600">{client.satisfaction || 0}%</span>
                       </div>
                       <Badge className={`${
-                        client.satisfaction >= 90 ? 'bg-green-100 text-green-800' :
+                        (client.satisfaction || 0) >= 90 ? 'bg-green-100 text-green-800' :
                         client.satisfaction >= 75 ? 'bg-blue-100 text-blue-800' :
                         client.satisfaction >= 60 ? 'bg-yellow-100 text-yellow-800' :
                         'bg-red-100 text-red-800'
@@ -1153,14 +1160,14 @@ export function ClientsPage() {
 
         {/* Clients Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredClients.map((client) => (
+          {(filteredClients || []).map((client) => (
             <Card key={client.id} className="hover:shadow-lg transition-shadow border-0 shadow-md">
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center space-x-3 space-x-reverse">
                     <Avatar className="w-12 h-12">
                       <AvatarFallback className="bg-[#1B4FFF] text-white">
-                        {(dir === 'rtl' ? client.organization : client.organizationEn).charAt(0)}
+                        {((dir === 'rtl' ? client.organization : client.organizationEn) || '').charAt(0) || 'C'}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">

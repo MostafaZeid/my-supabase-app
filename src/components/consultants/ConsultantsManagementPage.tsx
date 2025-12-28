@@ -175,7 +175,7 @@ export function ConsultantsManagementPage() {
     );
   };
 
-  if (loading && consultants.length === 0) {
+  if (loading && (!consultants || consultants.length === 0)) {
     return (
       <div className="flex items-center justify-center h-64">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -297,19 +297,19 @@ export function ConsultantsManagementPage() {
 
       {/* Consultants Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {consultants.map((consultant) => (
+        {(consultants || []).map((consultant) => (
           <Card key={consultant.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {consultant.name.charAt(0)}
+                      {consultant.avatar_initials || consultant.full_name?.charAt(0) || 'C'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">{consultant.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{consultant.specialization}</p>
+                    <CardTitle className="text-lg">{consultant.full_name || consultant.name || ''}</CardTitle>
+                    <p className="text-sm text-muted-foreground">{consultant.specialization || ''}</p>
                   </div>
                 </div>
                 

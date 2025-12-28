@@ -215,7 +215,7 @@ export function ClientDetailsModal({ isOpen, onClose, client, onEdit }: ClientDe
                   <Avatar className="w-16 h-16 border-4 border-white shadow-lg">
                     <AvatarImage src={client.contactPerson?.avatar} />
                     <AvatarFallback className="bg-gradient-to-br from-green-500 to-green-600 text-white text-lg font-bold">
-                      {(dir === 'rtl' ? client.contactPerson?.name : client.contactPerson?.nameEn)?.charAt(0)}
+                      {((dir === 'rtl' ? client.contactPerson?.name : client.contactPerson?.nameEn) || '').charAt(0) || 'C'}
                     </AvatarFallback>
                   </Avatar>
                   <div>

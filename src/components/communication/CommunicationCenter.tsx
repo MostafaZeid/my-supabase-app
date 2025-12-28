@@ -411,7 +411,7 @@ const CommunicationCenter: React.FC = () => {
                     <div>
                       <label className="text-sm font-medium mb-2 block">إضافة أعضاء</label>
                       <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {users.map(user => (
+                        {(users || []).map(user => (
                           <div
                             key={user.id}
                             className={cn(
@@ -424,11 +424,11 @@ const CommunicationCenter: React.FC = () => {
                           >
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={user.avatar} />
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback>{(user.name || '').charAt(0) || 'U'}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <p className="text-sm font-medium">{user.name}</p>
-                              <p className="text-xs text-gray-500">{user.role}</p>
+                              <p className="text-sm font-medium">{user.name || ''}</p>
+                              <p className="text-xs text-gray-500">{user.role || ''}</p>
                             </div>
                             {selectedUsers.includes(user.id) && (
                               <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
@@ -473,7 +473,7 @@ const CommunicationCenter: React.FC = () => {
                     <div>
                       <label className="text-sm font-medium mb-2 block">اختيار الأعضاء</label>
                       <div className="space-y-2 max-h-40 overflow-y-auto">
-                        {users.map(user => (
+                        {(users || []).map(user => (
                           <div
                             key={user.id}
                             className={cn(
@@ -486,11 +486,11 @@ const CommunicationCenter: React.FC = () => {
                           >
                             <Avatar className="h-8 w-8">
                               <AvatarImage src={user.avatar} />
-                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback>{(user.name || '').charAt(0) || 'U'}</AvatarFallback>
                             </Avatar>
                             <div className="flex-1">
-                              <p className="text-sm font-medium">{user.name}</p>
-                              <p className="text-xs text-gray-500">{user.role}</p>
+                              <p className="text-sm font-medium">{user.name || ''}</p>
+                              <p className="text-xs text-gray-500">{user.role || ''}</p>
                             </div>
                             {selectedUsers.includes(user.id) && (
                               <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
@@ -537,7 +537,7 @@ const CommunicationCenter: React.FC = () => {
         {/* Chat List */}
         <ScrollArea className="flex-1">
           <div className="p-2">
-            {sortedChats.map(chat => (
+            {(sortedChats || []).map(chat => (
               <div
                 key={chat.id}
                 className={cn(
@@ -552,7 +552,7 @@ const CommunicationCenter: React.FC = () => {
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={chat.avatar} />
                     <AvatarFallback>
-                      {chat.type === 'direct' ? chat.name.charAt(0) : getChatIcon(chat.type)}
+                      {chat.type === 'direct' ? (chat.name || '').charAt(0) || 'C' : getChatIcon(chat.type)}
                     </AvatarFallback>
                   </Avatar>
                   {chat.type === 'direct' && chat.isOnline && (
@@ -566,7 +566,7 @@ const CommunicationCenter: React.FC = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <p className="font-medium text-sm truncate">{chat.name}</p>
+                      <p className="font-medium text-sm truncate">{chat.name || ''}</p>
                       {chat.isMuted && <BellOff className="h-3 w-3 text-gray-400" />}
                     </div>
                     <div className="flex items-center gap-1">
@@ -664,13 +664,13 @@ const CommunicationCenter: React.FC = () => {
                     <AvatarImage src={activeChat_data.avatar} />
                     <AvatarFallback>
                       {activeChat_data.type === 'direct' 
-                        ? activeChat_data.name.charAt(0) 
+                        ? (activeChat_data.name || '').charAt(0) || 'C'
                         : getChatIcon(activeChat_data.type)
                       }
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h2 className="font-semibold">{activeChat_data.name}</h2>
+                    <h2 className="font-semibold">{activeChat_data.name || ''}</h2>
                     <div className="flex items-center gap-2">
                       {activeChat_data.type === 'direct' && activeChat_data.isOnline && (
                         <div className="flex items-center gap-1">
@@ -680,7 +680,7 @@ const CommunicationCenter: React.FC = () => {
                       )}
                       {activeChat_data.type !== 'direct' && (
                         <span className="text-xs text-gray-500">
-                          {activeChat_data.participants.length} عضو
+                          {(activeChat_data.participants || []).length} عضو
                         </span>
                       )}
                       {activeChat_data.description && (
@@ -718,7 +718,7 @@ const CommunicationCenter: React.FC = () => {
             {/* Messages */}
             <ScrollArea className="flex-1 p-4">
               <div className="space-y-4">
-                {chatMessages.map(msg => (
+                {(chatMessages || []).map(msg => (
                   <div
                     key={msg.id}
                     className={cn(
@@ -729,7 +729,7 @@ const CommunicationCenter: React.FC = () => {
                     {msg.senderId !== 'current-user' && (
                       <Avatar className="h-8 w-8">
                         <AvatarImage src={msg.senderAvatar} />
-                        <AvatarFallback>{msg.senderName.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>{(msg.senderName || '').charAt(0) || 'U'}</AvatarFallback>
                       </Avatar>
                     )}
                     
@@ -741,12 +741,12 @@ const CommunicationCenter: React.FC = () => {
                           : "bg-gray-100 text-gray-900"
                       )}
                     >
-                      {msg.senderId !== 'current-user' && activeChat_data.type !== 'direct' && (
+                      {msg.senderId !== 'current-user' && activeChat_data?.type !== 'direct' && (
                         <p className="text-xs font-medium mb-1 opacity-70">
-                          {msg.senderName}
+                          {msg.senderName || ''}
                         </p>
                       )}
-                      <p className="text-sm">{msg.content}</p>
+                      <p className="text-sm">{msg.content || ''}</p>
                       <div className="flex items-center justify-between mt-2">
                         <span className="text-xs opacity-70">
                           {formatTime(msg.timestamp)}

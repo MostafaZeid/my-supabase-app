@@ -351,9 +351,9 @@ const AdvancedProjectsPage: React.FC = () => {
     })
   }
 
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         project.description.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredProjects = (projects || []).filter(project => {
+    const matchesSearch = (project.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (project.description || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter
     const matchesPriority = priorityFilter === 'all' || project.priority === priorityFilter
     

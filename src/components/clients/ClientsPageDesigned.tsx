@@ -483,14 +483,14 @@ export function ClientsPageDesigned() {
 
           {/* Clients Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8">
-            {filteredClients.map((client) => (
+            {(filteredClients || []).map((client) => (
               <Card key={client.id} className="bg-white/90 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-[#1B4FFF]/10 to-[#0A1E39]/10 pb-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-4 space-x-reverse">
                       <Avatar className="w-16 h-16 border-4 border-white shadow-lg">
                         <AvatarFallback className="bg-gradient-to-br from-[#1B4FFF] to-[#0A1E39] text-white text-lg font-bold">
-                          {(dir === 'rtl' ? client.organization : client.organizationEn).charAt(0)}
+                          {((dir === 'rtl' ? client.organization : client.organizationEn) || '').charAt(0) || 'C'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">

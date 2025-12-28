@@ -511,19 +511,19 @@ export function UsersPage() {
                   <p className="text-sm text-muted-foreground">
                     {dir === 'rtl' ? 'تم التعيين بواسطة:' : 'Assigned by:'}
                   </p>
-                  <p className="text-sm font-medium">{user.assignedBy.name}</p>
-                  <p className="text-xs text-muted-foreground">{user.assignedBy.role}</p>
+                  <p className="text-sm font-medium">{user.assignedBy?.name || ''}</p>
+                  <p className="text-xs text-muted-foreground">{user.assignedBy?.role || ''}</p>
                 </div>
               )}
 
               {/* Assigned Projects */}
-              {user.assignedProjects.length > 0 && (
+              {(user.assignedProjects || []).length > 0 && (
                 <div>
                   <p className="text-sm font-medium mb-2">
                     {dir === 'rtl' ? 'المشاريع المخصصة:' : 'Assigned Projects:'}
                   </p>
                   <div className="flex flex-wrap gap-1">
-                    {user.assignedProjects.map((project, index) => (
+                    {(user.assignedProjects || []).map((project, index) => (
                       <Badge key={index} variant="secondary" className="text-xs">
                         {dir === 'rtl' ? project.name : project.nameEn}
                       </Badge>
@@ -538,20 +538,20 @@ export function UsersPage() {
                   {dir === 'rtl' ? 'الصلاحيات:' : 'Permissions:'}
                 </p>
                 <div className="flex flex-wrap gap-1">
-                  {user.permissions.includes('all') ? (
+                  {(user.permissions || []).includes('all') ? (
                     <Badge variant="outline" className="text-xs bg-red-50 text-red-700">
                       {dir === 'rtl' ? 'جميع الصلاحيات' : 'All Permissions'}
                     </Badge>
                   ) : (
-                    user.permissions.slice(0, 3).map((permission, index) => (
+                    (user.permissions || []).slice(0, 3).map((permission, index) => (
                       <Badge key={index} variant="outline" className="text-xs">
-                        {permission.replace('.', ' ')}
+                        {(permission || '').replace('.', ' ')}
                       </Badge>
                     ))
                   )}
-                  {user.permissions.length > 3 && !user.permissions.includes('all') && (
+                  {(user.permissions || []).length > 3 && !(user.permissions || []).includes('all') && (
                     <Badge variant="outline" className="text-xs">
-                      +{user.permissions.length - 3} {dir === 'rtl' ? 'المزيد' : 'more'}
+                      +{(user.permissions || []).length - 3} {dir === 'rtl' ? 'المزيد' : 'more'}
                     </Badge>
                   )}
                 </div>

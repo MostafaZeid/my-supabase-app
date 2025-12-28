@@ -205,18 +205,18 @@ export function ClientsPage() {
 
       {/* Clients Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {clients.map((client) => (
+        {(clients || []).map((client) => (
           <Card key={client.id} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-12 w-12">
                     <AvatarFallback className="bg-primary/10 text-primary font-semibold">
-                      {client.name.charAt(0)}
+                      {(client.name || '').charAt(0) || 'C'}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <CardTitle className="text-lg">{client.name}</CardTitle>
+                    <CardTitle className="text-lg">{client.name || ''}</CardTitle>
                     {client.company && (
                       <p className="text-sm text-muted-foreground">{client.company}</p>
                     )}
